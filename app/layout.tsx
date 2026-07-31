@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Markets", href: "#markets", icon: BarChart3 },
+  { name: "Markets", href: "/markets", icon: BarChart3 },
   { name: "Converter", href: "#converter", icon: RefreshCw },
   { name: "Trades", href: "#trades", icon: ArrowLeftRight },
   { name: "Discover", href: "#discover", icon: Compass },
