@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { getTopCoins } from "@/lib/coingecko";
 import { CoinMarket } from "@/types/coingecko";
+import Link from "next/link";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -14,23 +16,27 @@ import {
   ChevronUp, 
   ChevronDown, 
   RefreshCw, 
-  AlertCircle
+  AlertCircle,
+  X
 } from "lucide-react";
 
 type SortField = "rank" | "price" | "change" | "market_cap" | "volume";
 type SortOrder = "asc" | "desc";
 
-export default function MarketsPage() {
+function MarketsContent() {
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category") || undefined;
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortField>("rank");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const limit = 100; // Load 100 items per page
 
-  // Fetch coins using React Query
+  // Fetch coins using React Query (including category in key and fetch args)
   const { data: coins = [], isLoading, isError, error, refetch, isFetching } = useQuery({
-    queryKey: ["coins", page],
-    queryFn: () => getTopCoins("usd", limit, page),
+    queryKey: ["coins", page, category],
+    queryFn: () => getTopCoins("usd", limit, page, "market_cap_desc", category),
     staleTime: 30000, // 30 seconds cache stale time
     placeholderData: (previousData) => previousData, // keep previous data while fetching new page
   });
@@ -50,12 +56,19 @@ export default function MarketsPage() {
     if (price >= 1) {
       return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price);
     }
-    // For cheap coins (e.g. shiba), show more decimal places
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 4, maximumFractionDigits: 6 }).format(price);
   };
 
   const formatCompact = (val: number) => {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", compactDisplay: "short" }).format(val);
+  };
+
+  // Helper to format Category Slug into user readable format
+  const getCategoryName = (cat: string) => {
+    return cat
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   // Filter loaded coins client-side based on search term
@@ -116,10 +129,25 @@ export default function MarketsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white">Cryptocurrency Markets</h1>
-          <p className="text-sm text-text-secondary mt-1">Live market capitalization, volumes, and 24h price trends.</p>
+          <p className="text-sm text-text-secondary mt-1">
+            {category 
+              ? `Displaying sector: ${getCategoryName(category)}`
+              : "Live market capitalization, volumes, and 24h price trends."}
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Active Category Filter Badge */}
+          {category && (
+            <Link
+              href="/markets"
+              className="inline-flex items-center gap-1 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-semibold text-accent hover:bg-primary/20 transition-all"
+            >
+              <span>Sector: {getCategoryName(category)}</span>
+              <X className="h-3 w-3 text-text-muted hover:text-white" />
+            </Link>
+          )}
+
           {/* Search Box */}
           <div className="relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -271,7 +299,6 @@ export default function MarketsPage() {
                               alt={coin.name} 
                               className="h-6 w-6 rounded-full"
                               onError={(e) => {
-                                // Fallback if image fails to load
                                 (e.target as HTMLImageElement).src = `https://placehold.co/24x24/1F2235/white?text=${coin.symbol.substring(0, 2).toUpperCase()}`;
                               }}
                             />
@@ -369,5 +396,18 @@ export default function MarketsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MarketsPage() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 text-center text-sm text-text-secondary">
+        <RefreshCw className="h-6 w-6 animate-spin text-accent mx-auto mb-2" />
+        Loading Markets Section...
+      </div>
+    }>
+      <MarketsContent />
+    </Suspense>
   );
 }

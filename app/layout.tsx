@@ -33,7 +33,7 @@ const navItems = [
   { name: "Markets", href: "/markets", icon: BarChart3 },
   { name: "Converter", href: "#converter", icon: RefreshCw },
   { name: "Trades", href: "#trades", icon: ArrowLeftRight },
-  { name: "Discover", href: "#discover", icon: Compass },
+  { name: "Discover", href: "/discover", icon: Compass },
 ];
 
 export default function RootLayout({

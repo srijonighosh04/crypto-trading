@@ -25,3 +25,47 @@ export interface CoinMarket {
   atl_date?: string | null;
   last_updated?: string | null;
 }
+
+export interface TrendingCoinItem {
+  id: string;
+  coin_id: number;
+  name: string;
+  symbol: string;
+  market_cap_rank: number;
+  thumb: string;
+  large: string;
+  slug: string;
+  price_btc: number;
+  score: number;
+  data: {
+    price: number | string;
+    price_btc: string;
+    price_change_percentage_24h: Record<string, number>;
+    market_cap: string;
+    market_cap_btc: string;
+    total_volume: string;
+    total_volume_btc: string;
+    sparkline?: string;
+  };
+}
+
+export interface TrendingCoin {
+  item: TrendingCoinItem;
+}
+
+export interface TrendingResponse {
+  coins: TrendingCoin[];
+  nfts: any[];
+  categories: any[];
+}
+
+export interface CoinCategory {
+  id: string;
+  name: string;
+  market_cap: number | null;
+  market_cap_change_24h: number | null;
+  content: string | null;
+  top_3_coins: string[];
+  volume_24h: number | null;
+}
+

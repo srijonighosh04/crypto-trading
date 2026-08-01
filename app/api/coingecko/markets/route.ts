@@ -54,9 +54,10 @@ export async function GET(request: NextRequest) {
   const per_page = searchParams.get("per_page") || "100";
   const page = searchParams.get("page") || "1";
   const price_change_percentage = searchParams.get("price_change_percentage") || "24h";
+  const category = searchParams.get("category");
 
   // Create a cache key from parameters
-  const cacheKey = `${vs_currency}_${order}_${per_page}_${page}_${price_change_percentage}`;
+  const cacheKey = `${vs_currency}_${order}_${per_page}_${page}_${price_change_percentage}_${category || ""}`;
 
   // Check memory cache
   const cached = cacheMap.get(cacheKey);
@@ -85,6 +86,10 @@ export async function GET(request: NextRequest) {
   
   if (price_change_percentage) {
     coingeckoUrl.searchParams.set("price_change_percentage", price_change_percentage);
+  }
+
+  if (category) {
+    coingeckoUrl.searchParams.set("category", category);
   }
 
   const headers: Record<string, string> = {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CoinMarket } from "@/types/coingecko";
+import { CoinMarket, TrendingResponse, CoinCategory } from "@/types/coingecko";
 
 // --- Zod Response Validation Schemas (Left for other API interfaces) ---
 
@@ -20,7 +20,8 @@ export async function getTopCoins(
   vsCurrency = "usd",
   limit = 100,
   page = 1,
-  order = "market_cap_desc"
+  order = "market_cap_desc",
+  category?: string
 ): Promise<CoinMarket[]> {
   const queryParams = new URLSearchParams({
     vs_currency: vsCurrency,
@@ -30,8 +31,40 @@ export async function getTopCoins(
     price_change_percentage: "24h",
   });
 
+  if (category) {
+    queryParams.set("category", category);
+  }
+
   // Fetch from our internal server API proxy route
   const response = await fetch(`/api/coingecko/markets?${queryParams.toString()}`);
+  
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Server responded with ${response.status}`);
+  }
+  
+  return response.json();
+}
+
+/**
+ * Fetches trending coins from our local Next.js proxy route
+ */
+export async function getTrending(): Promise<TrendingResponse> {
+  const response = await fetch("/api/coingecko/trending");
+  
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Server responded with ${response.status}`);
+  }
+  
+  return response.json();
+}
+
+/**
+ * Fetches categories list from our local Next.js proxy route
+ */
+export async function getCategories(): Promise<CoinCategory[]> {
+  const response = await fetch("/api/coingecko/categories");
   
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
