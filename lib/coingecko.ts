@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CoinMarket, TrendingResponse, CoinCategory } from "@/types/coingecko";
+import { CoinMarket, TrendingResponse, CoinCategory, SimplePriceResponse } from "@/types/coingecko";
 
 // --- Zod Response Validation Schemas (Left for other API interfaces) ---
 
@@ -65,6 +65,25 @@ export async function getTrending(): Promise<TrendingResponse> {
  */
 export async function getCategories(): Promise<CoinCategory[]> {
   const response = await fetch("/api/coingecko/categories");
+  
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Server responded with ${response.status}`);
+  }
+  
+  return response.json();
+}
+
+/**
+ * Fetches simple price exchange rates for coins and vs_currencies from local proxy route
+ */
+export async function getSimplePrice(ids: string, vsCurrencies: string): Promise<SimplePriceResponse> {
+  const queryParams = new URLSearchParams({
+    ids: ids,
+    vs_currencies: vsCurrencies,
+  });
+
+  const response = await fetch(`/api/coingecko/price?${queryParams.toString()}`);
   
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));

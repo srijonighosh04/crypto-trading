@@ -69,3 +69,5 @@ export interface CoinCategory {
   volume_24h: number | null;
 }
 
+export type SimplePriceResponse = Record<string, Record<string, number>>;
+
