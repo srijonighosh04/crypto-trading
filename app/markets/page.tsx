@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { getTopCoins } from "@/lib/coingecko";
 import { CoinMarket } from "@/types/coingecko";
 import Link from "next/link";
@@ -25,6 +25,7 @@ type SortOrder = "asc" | "desc";
 
 function MarketsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const category = searchParams.get("category") || undefined;
 
   const [page, setPage] = useState(1);
@@ -285,7 +286,11 @@ function MarketsContent() {
                     const isPositive = priceChange >= 0;
 
                     return (
-                      <tr key={coin.id} className="hover:bg-[#151926]/40 transition-all duration-150">
+                      <tr 
+                        key={coin.id} 
+                        onClick={() => router.push(`/coin/${coin.id}`)}
+                        className="hover:bg-[#151926]/40 cursor-pointer transition-all duration-150"
+                      >
                         {/* Rank */}
                         <td className="py-3.5 px-4 font-mono text-xs text-text-muted">
                           {coin.market_cap_rank}

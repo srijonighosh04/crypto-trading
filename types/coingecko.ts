@@ -71,3 +71,5 @@ export interface CoinCategory {
 
 export type SimplePriceResponse = Record<string, Record<string, number>>;
 
+export type OhlcEntry = [number, number, number, number, number];
+

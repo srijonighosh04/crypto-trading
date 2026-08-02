@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CoinMarket, TrendingResponse, CoinCategory, SimplePriceResponse } from "@/types/coingecko";
+import { CoinMarket, TrendingResponse, CoinCategory, SimplePriceResponse, OhlcEntry } from "@/types/coingecko";
 
 // --- Zod Response Validation Schemas (Left for other API interfaces) ---
 
@@ -21,7 +21,8 @@ export async function getTopCoins(
   limit = 100,
   page = 1,
   order = "market_cap_desc",
-  category?: string
+  category?: string,
+  ids?: string
 ): Promise<CoinMarket[]> {
   const queryParams = new URLSearchParams({
     vs_currency: vsCurrency,
@@ -33,6 +34,10 @@ export async function getTopCoins(
 
   if (category) {
     queryParams.set("category", category);
+  }
+
+  if (ids) {
+    queryParams.set("ids", ids);
   }
 
   // Fetch from our internal server API proxy route
@@ -90,6 +95,30 @@ export async function getSimplePrice(ids: string, vsCurrencies: string): Promise
     throw new Error(errorBody.error || `Server responded with ${response.status}`);
   }
   
+  return response.json();
+}
+
+/**
+ * Fetches OHLC candlestick chart data for a coin from local proxy route
+ */
+export async function getCoinOhlc(
+  id: string,
+  vsCurrency = "usd",
+  days = "30"
+): Promise<OhlcEntry[]> {
+  const queryParams = new URLSearchParams({
+    id,
+    vs_currency: vsCurrency,
+    days,
+  });
+
+  const response = await fetch(`/api/coingecko/ohlc?${queryParams.toString()}`);
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Server responded with ${response.status}`);
+  }
+
   return response.json();
 }
 
