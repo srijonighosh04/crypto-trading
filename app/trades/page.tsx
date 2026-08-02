@@ -33,6 +33,7 @@ const SUPPORTED_PAIRS: TradingPair[] = [
 ];
 
 import { wsManager, WSStatus } from "@/lib/websocket";
+import { useNotifications } from "@/hooks/useNotifications";
 
 export default function TradesPage() {
   const [selectedPair, setSelectedPair] = useState<TradingPair>(SUPPORTED_PAIRS[0]); // Default BTC/USD
@@ -41,10 +42,12 @@ export default function TradesPage() {
   const [status, setStatus] = useState<WSStatus>("disconnected");
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { addNotification } = useNotifications();
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const tradesRef = useRef<Trade[]>([]);
   const isPausedRef = useRef(isPaused);
+  const prevStatusRef = useRef<WSStatus>("disconnected");
 
   // Sync isPaused state to ref and handle catch-up
   useEffect(() => {
@@ -62,9 +65,22 @@ export default function TradesPage() {
     tradesRef.current = [];
     setDisplayTrades([]);
 
+    // Initialize status mapping manager state
+    const initialStatus = wsManager.getStatus();
+    setStatus(initialStatus);
+    prevStatusRef.current = initialStatus;
+
     // 1. Subscribe to status events
     const unsubscribeStatus = wsManager.registerStatusListener((newStatus) => {
       setStatus(newStatus);
+      if (newStatus !== prevStatusRef.current) {
+        if (newStatus === "reconnecting" && prevStatusRef.current === "connected") {
+          addNotification("WebSocket trades feed connection lost. Reconnecting...", "warning");
+        } else if (newStatus === "connected" && prevStatusRef.current === "reconnecting") {
+          addNotification("WebSocket trades feed connection restored.", "success");
+        }
+        prevStatusRef.current = newStatus;
+      }
     });
 
     // 2. Register trades callback
@@ -82,7 +98,7 @@ export default function TradesPage() {
       unsubscribeStatus();
       wsManager.unsubscribeTrades(cleanId, callback);
     };
-  }, [selectedPair.id]);
+  }, [selectedPair.id, addNotification]);
 
   // Handle clicking outside searchable select
   useEffect(() => {

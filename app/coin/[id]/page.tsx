@@ -6,6 +6,7 @@ import { getTopCoins, getCoinOhlc } from "@/lib/coingecko";
 import { useCoinGeckoWebSocket } from "@/hooks/useCoinGeckoWebSocket";
 import CandlestickChart from "@/components/CandlestickChart";
 import Link from "next/link";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { 
   ArrowLeft, 
   TrendingUp, 
@@ -218,7 +219,7 @@ function CoinDetailContent({ params }: CoinDetailPageProps) {
           )}
 
           {!isOhlcLoading && !isOhlcError && (
-            <>
+            <ErrorBoundary fallbackTitle="Chart Display Offline">
               {ohlcData.length > 0 ? (
                 <CandlestickChart data={ohlcData} livePrice={livePrice} />
               ) : (
@@ -226,7 +227,7 @@ function CoinDetailContent({ params }: CoinDetailPageProps) {
                   <span>No candlestick data returned from CoinGecko for this timeframe.</span>
                 </div>
               )}
-            </>
+            </ErrorBoundary>
           )}
         </div>
 

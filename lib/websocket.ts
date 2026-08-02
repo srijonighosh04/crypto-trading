@@ -50,6 +50,10 @@ class CoinGeckoWSManager {
     this.startThrottleEmitter();
   }
 
+  public getStatus(): WSStatus {
+    return this.status;
+  }
+
   // --- Public Subscription API ---
 
   public subscribe(coinId: string, callback: (price: number) => void) {

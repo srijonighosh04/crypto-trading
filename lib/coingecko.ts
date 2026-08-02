@@ -11,6 +11,31 @@ export const CoinHistorySchema = z.object({
 
 export type CoinHistory = z.infer<typeof CoinHistorySchema>;
 
+// --- Internal Helper for Centralized Response Header Checking ---
+
+async function handleResponse(response: Response) {
+  // Check headers for proxy cache warnings (e.g. Rate limits / fallback stale data)
+  const cacheStatus = response.headers.get("x-cache-status");
+  const warning = response.headers.get("x-warning");
+
+  if (cacheStatus === "STALE_FALLBACK" && typeof window !== "undefined") {
+    const message = warning || "Rate limit reached, returning cached offline data.";
+    console.warn(`[API Client Interceptor] Proxy returned stale data alert: ${message}`);
+    
+    const event = new CustomEvent("coingecko-api-warning", {
+      detail: { message }
+    });
+    window.dispatchEvent(event);
+  }
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.error || `Server responded with status ${response.status}`);
+  }
+  
+  return response.json();
+}
+
 // --- API Client Functions ---
 
 /**
@@ -42,13 +67,7 @@ export async function getTopCoins(
 
   // Fetch from our internal server API proxy route
   const response = await fetch(`/api/coingecko/markets?${queryParams.toString()}`);
-  
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.error || `Server responded with ${response.status}`);
-  }
-  
-  return response.json();
+  return handleResponse(response);
 }
 
 /**
@@ -56,13 +75,7 @@ export async function getTopCoins(
  */
 export async function getTrending(): Promise<TrendingResponse> {
   const response = await fetch("/api/coingecko/trending");
-  
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.error || `Server responded with ${response.status}`);
-  }
-  
-  return response.json();
+  return handleResponse(response);
 }
 
 /**
@@ -70,13 +83,7 @@ export async function getTrending(): Promise<TrendingResponse> {
  */
 export async function getCategories(): Promise<CoinCategory[]> {
   const response = await fetch("/api/coingecko/categories");
-  
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.error || `Server responded with ${response.status}`);
-  }
-  
-  return response.json();
+  return handleResponse(response);
 }
 
 /**
@@ -89,13 +96,7 @@ export async function getSimplePrice(ids: string, vsCurrencies: string): Promise
   });
 
   const response = await fetch(`/api/coingecko/price?${queryParams.toString()}`);
-  
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.error || `Server responded with ${response.status}`);
-  }
-  
-  return response.json();
+  return handleResponse(response);
 }
 
 /**
@@ -113,13 +114,7 @@ export async function getCoinOhlc(
   });
 
   const response = await fetch(`/api/coingecko/ohlc?${queryParams.toString()}`);
-
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.error || `Server responded with ${response.status}`);
-  }
-
-  return response.json();
+  return handleResponse(response);
 }
 
 /**
