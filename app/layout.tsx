@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 import Link from "next/link";
+import LiveIndicator from "@/components/LiveIndicator";
 import { 
   LayoutDashboard, 
   BarChart3, 
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 const navItems = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Markets", href: "/markets", icon: BarChart3 },
   { name: "Converter", href: "/converter", icon: RefreshCw },
   { name: "Trades", href: "#trades", icon: ArrowLeftRight },
@@ -80,9 +81,8 @@ export default function RootLayout({
 
               {/* Header Right Actions */}
               <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-border bg-[#121420]/50 px-3 py-1.5 text-xs font-semibold text-success">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-ping"></span>
-                  CoinGecko Connected
+                <div className="hidden sm:block">
+                  <LiveIndicator />
                 </div>
                 <button className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary to-primary-hover px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all">
                   <Wallet className="h-4 w-4" />

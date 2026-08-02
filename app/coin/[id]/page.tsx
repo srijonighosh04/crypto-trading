@@ -3,6 +3,7 @@
 import React, { useState, use, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getTopCoins, getCoinOhlc } from "@/lib/coingecko";
+import { useCoinGeckoWebSocket } from "@/hooks/useCoinGeckoWebSocket";
 import CandlestickChart from "@/components/CandlestickChart";
 import Link from "next/link";
 import { 
@@ -41,6 +42,10 @@ function CoinDetailContent({ params }: CoinDetailPageProps) {
   });
 
   const coin = marketCoins?.[0]; // Get the single coin match
+
+  // Subscribe to real-time prices for this coin ID
+  const { prices: wsPrices } = useCoinGeckoWebSocket([id]);
+  const livePrice = coin ? (wsPrices[id.toLowerCase()] ?? coin.current_price) : 0;
 
   // 2. Fetch OHLC data for the candlestick chart
   const { 
@@ -146,7 +151,7 @@ function CoinDetailContent({ params }: CoinDetailPageProps) {
         <div className="flex items-baseline md:items-end flex-col gap-1.5">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-extrabold text-white font-mono tracking-tight">
-              {formatPrice(coin.current_price)}
+              {formatPrice(livePrice)}
             </span>
             <span className={`inline-flex items-center gap-0.5 rounded px-2.5 py-1 text-xs font-semibold ${
               isPositive ? "text-success bg-success/10" : "text-danger bg-danger/10"
@@ -215,7 +220,7 @@ function CoinDetailContent({ params }: CoinDetailPageProps) {
           {!isOhlcLoading && !isOhlcError && (
             <>
               {ohlcData.length > 0 ? (
-                <CandlestickChart data={ohlcData} />
+                <CandlestickChart data={ohlcData} livePrice={livePrice} />
               ) : (
                 <div className="h-[400px] w-full rounded-xl border border-border bg-card flex flex-col items-center justify-center text-sm text-text-muted">
                   <span>No candlestick data returned from CoinGecko for this timeframe.</span>

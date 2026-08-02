@@ -6,9 +6,10 @@ import { OhlcEntry } from "@/types/coingecko";
 
 interface CandlestickChartProps {
   data: OhlcEntry[];
+  livePrice?: number;
 }
 
-export default function CandlestickChart({ data }: CandlestickChartProps) {
+export default function CandlestickChart({ data, livePrice }: CandlestickChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<any>(null);
   const seriesRef = useRef<any>(null);
@@ -107,6 +108,35 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
       chart.remove();
     };
   }, [data]);
+
+  // Handle real-time updates for the last candle when livePrice ticks
+  useEffect(() => {
+    if (!seriesRef.current || !data || data.length === 0 || !livePrice) return;
+
+    // Get the last data item from the series
+    const lastItem = [...data]
+      .map((entry) => ({
+        time: Math.floor(entry[0] / 1000) as UTCTimestamp,
+        open: entry[1],
+        high: entry[2],
+        low: entry[3],
+        close: entry[4],
+      }))
+      .sort((a, b) => a.time - b.time)[data.length - 1];
+
+    if (!lastItem) return;
+
+    // Update the last candle: high & low are accumulated boundaries, close is the live price
+    const updatedCandle = {
+      time: lastItem.time,
+      open: lastItem.open,
+      high: Math.max(lastItem.high, livePrice),
+      low: Math.min(lastItem.low, livePrice),
+      close: livePrice,
+    };
+
+    seriesRef.current.update(updatedCandle);
+  }, [livePrice, data]);
 
   return (
     <div className="w-full relative rounded-xl overflow-hidden border border-border bg-card p-4">
