@@ -275,7 +275,7 @@ export default function TradesPage() {
 
         {/* Scrollable Container */}
         <div className="overflow-x-auto max-h-[500px]">
-          <table className="w-full text-left border-collapse font-mono text-xs select-none table-fixed">
+          <table className="w-full min-w-[600px] text-left border-collapse font-mono text-xs select-none table-fixed">
             <thead className="sticky top-0 bg-[#0c0d15] text-[#4f5b75] border-b border-border/40 select-none z-10">
               <tr>
                 <th className="py-2.5 px-4 w-1/5 font-semibold">TIME</th>

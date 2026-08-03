@@ -25,8 +25,36 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ApexCrypto | Professional Crypto Analytics Dashboard",
-  description: "Real-time market insights, charts, and converter for crypto traders. Power up your investments with ApexCrypto.",
+  metadataBase: new URL("https://apexcrypto.vercel.app"),
+  title: {
+    default: "ApexCrypto | Professional Crypto Analytics Dashboard",
+    template: "%s | ApexCrypto",
+  },
+  description: "Real-time market insights, interactive charts, conversion calculators, and live on-chain trades feed for cryptocurrency traders.",
+  icons: {
+    icon: "/favicon.ico",
+  },
+  openGraph: {
+    title: "ApexCrypto | Professional Crypto Analytics Dashboard",
+    description: "Real-time market insights, charts, and converter for crypto traders. Power up your investments with ApexCrypto.",
+    url: "https://apexcrypto.vercel.app",
+    siteName: "ApexCrypto",
+    images: [
+      {
+        url: "/vercel.svg",
+        width: 800,
+        height: 600,
+        alt: "ApexCrypto Preview Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ApexCrypto | Professional Crypto Analytics Dashboard",
+    description: "Real-time market insights, charts, and converter for crypto traders.",
+  },
 };
 
 const navItems = [
